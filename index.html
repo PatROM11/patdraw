@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
@@ -7,11 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1115">
 <title>Patdraw</title>
-
-<!-- Icône iOS/Android injectée dynamiquement (180x180) -->
 <link id="appleIcon" rel="apple-touch-icon" sizes="180x180" href="">
 <link id="favicon" rel="icon" type="image/png" href="">
-
 <style>
   :root{
     --bg:#0f1115; --panel:#171a21; --text:#e8ecf3; --muted:#8b93a7;
@@ -23,13 +20,9 @@
   .app{position:fixed; inset:0; height:100%; width:100%; display:flex; flex-direction:column;}
   .canvas-wrap{position:relative; flex:1; padding:8px;}
   .stack{position:relative; width:100%; height:100%;}
-  canvas.layer, canvas.overlay{
-    position:absolute; inset:0; width:100%; height:100%; display:block; border-radius:12px;
-  }
+  canvas.layer, canvas.overlay{ position:absolute; inset:0; width:100%; height:100%; display:block; border-radius:12px; }
   canvas.bg{background:#fff; border-radius:12px; box-shadow:var(--shadow);}
   canvas.overlay{ pointer-events:auto; }
-
-  /* Bouton menu + mini-logo */
   .menu-toggle{
     position:fixed; left:10px; top:10px; z-index:9999;
     width:38px; height:38px; border-radius:10px; border:0; cursor:pointer;
@@ -37,14 +30,11 @@
     box-shadow:var(--shadow);
   }
   .brand{
-    position:fixed; left:60px; top:10px; z-index:9999;
-    display:flex; align-items:center; gap:8px; opacity:.92;
-    background:linear-gradient(180deg,var(--panel),#12151c); padding:8px 10px; border-radius:10px;
-    box-shadow:var(--shadow);
+    position:fixed; left:60px; top:10px; z-index:9999; display:flex; align-items:center; gap:8px; opacity:.92;
+    background:linear-gradient(180deg,var(--panel),#12151c); padding:8px 10px; border-radius:10px; box-shadow:var(--shadow);
   }
   .brand svg{ width:20px; height:20px; }
   .brand span{ font-weight:700; letter-spacing:.3px; }
-
   .toolbar{
     position:fixed; left:10px; top:58px; right:10px; z-index:9998;
     background:linear-gradient(180deg,var(--panel),#12151c);
@@ -52,34 +42,28 @@
   }
   .toolbar.open{ display:block; }
   .row{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px;}
-  .btn{
-    appearance:none; border:0; border-radius:10px; padding:10px 12px;
-    background:var(--btn); color:#fff; font-weight:600;
-  }
+  .btn{ appearance:none; border:0; border-radius:10px; padding:10px 12px; background:var(--btn); color:#fff; font-weight:600; }
   .btn[aria-pressed="true"]{ background:var(--accent); }
   .btn.small{ padding:6px 8px; font-size:12px }
   .btn.ok{ background:#132019; color:#b8f7dc }
   .btn.danger{ background:#2a1517; color:#ffc9c9 }
   input[type="color"]{width:42px;height:42px;border-radius:10px;border:none;padding:0;background:transparent;}
-  input[type="range"]{ width:160px; }
+  input[type="range"]{ width:140px; }
   .hint{
     position:absolute; left:12px; bottom:12px; color:#6a7286; font-size:12px;
     background:rgba(0,0,0,.35); padding:6px 10px; border-radius:10px;
   }
   .sep{ width:1px; height:28px; background:#2a2f3f; margin:0 6px; }
+  .opac-wrap{display:flex; align-items:center; gap:6px}
+  .opac-wrap label{font-size:12px; color:#b8bfd2}
+  .file{ display:none; }
 </style>
 </head>
 <body>
   <button class="menu-toggle" id="menuToggle" aria-label="Menu">m</button>
-
-  <!-- Mini logo Patdraw -->
   <div class="brand" aria-hidden="true">
     <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img">
-      <defs>
-        <linearGradient id="g" x1="0" x2="1">
-          <stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#10b981"/>
-        </linearGradient>
-      </defs>
+      <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#10b981"/></linearGradient></defs>
       <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#g)"/>
       <path d="M22 44V18h13.5c6.5 0 11 3.7 11 9.4 0 5.6-4.5 9.2-11 9.2H30v7.4H22zm8-14.2h5.4c2.4 0 4-1.4 4-3.4 0-2.1-1.6-3.5-4-3.5H30v6.9z" fill="#fff"/>
     </svg>
@@ -90,27 +74,37 @@
     <div class="row">
       <button class="btn" id="penBtn" aria-pressed="true">🖊️ Stylo</button>
       <button class="btn" id="eraserBtn" aria-pressed="false">🩹 Gomme</button>
+      <button class="btn" id="lineBtn" aria-pressed="false">／ Ligne</button>
       <button class="btn" id="rectBtn" aria-pressed="false">▭ Rectangle</button>
       <button class="btn" id="ellipseBtn" aria-pressed="false">◯ Ellipse</button>
       <button class="btn" id="fillBtn" aria-pressed="false">Remplir</button>
       <span class="sep"></span>
       <button class="btn" id="eyedropBtn" aria-pressed="false">🎯 Pipette</button>
       <button class="btn" id="loupeBtn" aria-pressed="false">🔍 Loupe</button>
-    </div>
-
-    <div class="row">
+      <span class="sep"></span>
       <input id="color" type="color" value="#1f2937" aria-label="Couleur" />
       <label for="size">Taille</label>
       <input id="size" type="range" min="1" max="60" step="1" value="8" />
       <span id="sizeOut">8 px</span>
       <span class="sep"></span>
+      <button class="btn" id="importBtn">📥 Import image</button>
+      <input id="fileInput" type="file" accept="image/*" class="file">
+      <label><input type="checkbox" id="fitImage" checked> Ajuster à la taille</label>
+    </div>
+
+    <div class="row">
       <span>Calque :</span>
       <button class="btn small" id="layer1Btn" aria-pressed="true">L1</button>
       <button class="btn small" id="eye1" aria-pressed="true">👁1</button>
+      <div class="opac-wrap"><label>Opac1</label><input id="op1" type="range" min="0" max="100" value="100"></div>
+
       <button class="btn small" id="layer2Btn" aria-pressed="false">L2</button>
       <button class="btn small" id="eye2" aria-pressed="true">👁2</button>
+      <div class="opac-wrap"><label>Opac2</label><input id="op2" type="range" min="0" max="100" value="100"></div>
+
       <button class="btn small" id="layer3Btn" aria-pressed="false">L3</button>
       <button class="btn small" id="eye3" aria-pressed="true">👁3</button>
+      <div class="opac-wrap"><label>Opac3</label><input id="op3" type="range" min="0" max="100" value="100"></div>
     </div>
 
     <div class="row">
@@ -131,461 +125,257 @@
         <canvas class="layer" id="layer3"></canvas>
         <canvas class="overlay" id="overlay"></canvas>
       </div>
-      <div class="hint">Astuce : touche “m” pour afficher/masquer le menu. Outils : Stylo, Gomme, ▭, ◯, 🎯, 🔍</div>
+      <div class="hint">Astuce : “m” pour menu. Outils : Stylo, Gomme, Ligne, ▭, ◯, 🎯, 🔍. Import image dans le calque actif. Opacité par calque.</div>
     </div>
   </div>
 
 <script>
-/* === Génération automatique de l'icône (180x180) + favicon === */
+/* === Génère une icône 180×180 + favicon, utilisable pour l'écran d'accueil === */
 (function(){
   function makeIcon(size){
-    var c=document.createElement('canvas'), x=c.getContext('2d'); c.width=c.height=size;
-    // fond dégradé
-    var g=x.createLinearGradient(0,0,size,size);
-    g.addColorStop(0,"#3b82f6"); g.addColorStop(1,"#10b981");
-    x.fillStyle=g; x.fillRect(0,0,size,size);
-    // arrondis
-    x.globalCompositeOperation="destination-in";
-    x.beginPath(); var r=size*0.2; // rayon de coin
-    x.moveTo(r,0); x.arcTo(size,0,size,size,r); x.arcTo(size,size,0,size,r); x.arcTo(0,size,0,0,r); x.arcTo(0,0,size,0,r); x.closePath(); x.fill();
-    x.globalCompositeOperation="source-over";
-    // lettre P stylisée
-    x.fillStyle="#fff"; x.save();
-    x.translate(size*0.22,size*0.22); x.scale(size/180,size/180);
-    // mot P comme dans le mini-logo
-    x.beginPath();
-    // tige
-    x.rect(0,0,30,100);
-    // boucle
-    x.moveTo(30,0);
-    x.lineTo(65,0); x.quadraticCurveTo(110,0,110,35);
-    x.quadraticCurveTo(110,70,65,70); x.lineTo(30,70); x.closePath();
-    x.fill(); x.restore();
+    var c=document.createElement('canvas'),x=c.getContext('2d');c.width=c.height=size;
+    var g=x.createLinearGradient(0,0,size,size);g.addColorStop(0,"#3b82f6");g.addColorStop(1,"#10b981");
+    x.fillStyle=g;x.fillRect(0,0,size,size);
+    x.globalCompositeOperation="destination-in";x.beginPath();var r=size*0.2;
+    x.moveTo(r,0);x.arcTo(size,0,size,size,r);x.arcTo(size,size,0,size,r);x.arcTo(0,size,0,0,r);x.arcTo(0,0,size,0,r);x.closePath();x.fill();
+    x.globalCompositeOperation="source-over";x.fillStyle="#fff";x.save();x.translate(size*0.22,size*0.22);x.scale(size/180,size/180);
+    x.beginPath();x.rect(0,0,30,100);x.moveTo(30,0);x.lineTo(65,0);x.quadraticCurveTo(110,0,110,35);x.quadraticCurveTo(110,70,65,70);x.lineTo(30,70);x.closePath();x.fill();x.restore();
     return c.toDataURL("image/png");
   }
-  var icon180 = makeIcon(180);
-  var fav32 = makeIcon(64); // ça donne un joli favicon
-
-  var linkApple = document.getElementById('appleIcon');
-  var linkFav = document.getElementById('favicon');
-  if(linkApple) linkApple.href = icon180;
-  if(linkFav) linkFav.href = fav32;
+  var icon180=makeIcon(180), fav32=makeIcon(64);
+  document.getElementById('appleIcon').href=icon180;
+  document.getElementById('favicon').href=fav32;
 })();
 
-/* === Appli Patdraw (V2 fix : loupe, pipette, formes, 3 calques) === */
+/* === Patdraw V3 (V2 fix + Ligne + Opacité + Import image) === */
 (function(){
-  // ---------- Elements ----------
+  // Elements
   var bg = document.getElementById('bg');
-  var l1 = document.getElementById('layer1');
-  var l2 = document.getElementById('layer2');
-  var l3 = document.getElementById('layer3');
-  var overlay = document.getElementById('overlay');
-  var layers = [l1,l2,l3];
+  var l1 = document.getElementById('layer1'), l2 = document.getElementById('layer2'), l3 = document.getElementById('layer3');
+  var overlay = document.getElementById('overlay'); var layers=[l1,l2,l3];
+  var menuToggle = document.getElementById('menuToggle'), toolbar = document.getElementById('toolbar'), closeMenuBtn = document.getElementById('closeMenuBtn');
+  var penBtn = document.getElementById('penBtn'), eraserBtn = document.getElementById('eraserBtn'),
+      lineBtn=document.getElementById('lineBtn'), rectBtn=document.getElementById('rectBtn'), ellipseBtn=document.getElementById('ellipseBtn'),
+      fillBtn = document.getElementById('fillBtn'), eyedropBtn=document.getElementById('eyedropBtn'), loupeBtn=document.getElementById('loupeBtn');
+  var colorInput=document.getElementById('color'), sizeInput=document.getElementById('size'), sizeOut=document.getElementById('sizeOut');
+  var undoBtn=document.getElementById('undoBtn'), redoBtn=document.getElementById('redoBtn'), clearBtn=document.getElementById('clearBtn'), saveBtn=document.getElementById('saveBtn');
+  var layer1Btn=document.getElementById('layer1Btn'), layer2Btn=document.getElementById('layer2Btn'), layer3Btn=document.getElementById('layer3Btn');
+  var eye1=document.getElementById('eye1'), eye2=document.getElementById('eye2'), eye3=document.getElementById('eye3');
+  var op1=document.getElementById('op1'), op2=document.getElementById('op2'), op3=document.getElementById('op3');
+  var importBtn=document.getElementById('importBtn'), fileInput=document.getElementById('fileInput'), fitImage=document.getElementById('fitImage');
 
-  var menuToggle = document.getElementById('menuToggle');
-  var toolbar = document.getElementById('toolbar');
-  var closeMenuBtn = document.getElementById('closeMenuBtn');
+  // Contexts
+  var dpr=Math.max(1,window.devicePixelRatio||1);
+  var bgx=bg.getContext('2d');
+  var ctxs=[l1.getContext('2d'), l2.getContext('2d'), l3.getContext('2d')];
+  var octx=overlay.getContext('2d');
 
-  var penBtn = document.getElementById('penBtn');
-  var eraserBtn = document.getElementById('eraserBtn');
-  var rectBtn = document.getElementById('rectBtn');
-  var ellipseBtn = document.getElementById('ellipseBtn');
-  var fillBtn = document.getElementById('fillBtn');
-  var eyedropBtn = document.getElementById('eyedropBtn');
-  var loupeBtn = document.getElementById('loupeBtn');
+  // Offscreen composite pour pipette/loupe/export
+  var comp=document.createElement('canvas'); var compCtx=comp.getContext('2d');
 
-  var colorInput = document.getElementById('color');
-  var sizeInput = document.getElementById('size');
-  var sizeOut = document.getElementById('sizeOut');
+  // State
+  var tool='pen'; // 'pen'|'eraser'|'line'|'rect'|'ellipse'|'eyedrop'|'loupe'
+  var fillShape=false, activeLayer=0, vis=[true,true,true];
+  var drawing=false, lastX=0,lastY=0,startX=0,startY=0;
+  var history=[], historyIndex=-1, HISTORY_LIMIT=15;
 
-  var undoBtn = document.getElementById('undoBtn');
-  var redoBtn = document.getElementById('redoBtn');
-  var clearBtn = document.getElementById('clearBtn');
-  var saveBtn = document.getElementById('saveBtn');
-
-  var layer1Btn = document.getElementById('layer1Btn');
-  var layer2Btn = document.getElementById('layer2Btn');
-  var layer3Btn = document.getElementById('layer3Btn');
-  var eye1 = document.getElementById('eye1');
-  var eye2 = document.getElementById('eye2');
-  var eye3 = document.getElementById('eye3');
-
-  // ---------- Contexts ----------
-  var dpr = Math.max(1, window.devicePixelRatio || 1);
-  var bgx = bg.getContext('2d');
-  var ctxs = [l1.getContext('2d'), l2.getContext('2d'), l3.getContext('2d')];
-  var octx = overlay.getContext('2d');
-
-  // Offscreen composite for pipette/loupe/export
-  var comp = document.createElement('canvas');
-  var compCtx = comp.getContext('2d');
-
-  // ---------- State ----------
-  var tool = 'pen'; // 'pen' | 'eraser' | 'rect' | 'ellipse' | 'eyedrop' | 'loupe'
-  var fillShape = false;
-  var activeLayer = 0; // 0..2
-  var vis = [true,true,true];
-
-  var drawing = false;
-  var lastX=0, lastY=0;
-  var startX=0, startY=0;
-
-  // History: store imageData for all 3 layers
-  var history = [], historyIndex = -1, HISTORY_LIMIT = 15;
-
-  // ---------- UI helpers ----------
-  function setPressed(el, on){ el.setAttribute('aria-pressed', on ? 'true':'false'); }
-  function openMenu(open){ toolbar.className = open ? 'toolbar open' : 'toolbar'; }
-
-  menuToggle.addEventListener('click', function(){
-    var isOpen = toolbar.className.indexOf('open') !== -1;
-    openMenu(!isOpen);
-  });
-  closeMenuBtn.addEventListener('click', function(){ openMenu(false); });
+  // UI helpers
+  function setPressed(el,on){el.setAttribute('aria-pressed', on?'true':'false');}
+  function openMenu(open){toolbar.className=open?'toolbar open':'toolbar';}
+  menuToggle.onclick=function(){openMenu(!(toolbar.className.indexOf('open')!==-1));};
+  closeMenuBtn.onclick=function(){openMenu(false);};
 
   function selectTool(t){
-    tool = t;
-    setPressed(penBtn, t==='pen');
-    setPressed(eraserBtn, t==='eraser');
-    setPressed(rectBtn, t==='rect');
-    setPressed(ellipseBtn, t==='ellipse');
-    setPressed(eyedropBtn, t==='eyedrop');
-    setPressed(loupeBtn, t==='loupe');
-    // Efface l'overlay de prévisualisation
+    tool=t;
+    setPressed(penBtn,t==='pen'); setPressed(eraserBtn,t==='eraser'); setPressed(lineBtn,t==='line');
+    setPressed(rectBtn,t==='rect'); setPressed(ellipseBtn,t==='ellipse'); setPressed(eyedropBtn,t==='eyedrop'); setPressed(loupeBtn,t==='loupe');
     octx.setTransform(1,0,0,1,0,0); octx.clearRect(0,0,overlay.width,overlay.height);
   }
-  penBtn.onclick = function(){ selectTool('pen'); };
-  eraserBtn.onclick = function(){ selectTool('eraser'); };
-  rectBtn.onclick = function(){ selectTool('rect'); };
-  ellipseBtn.onclick = function(){ selectTool('ellipse'); };
-  eyedropBtn.onclick = function(){ selectTool('eyedrop'); };
-  loupeBtn.onclick = function(){ selectTool('loupe'); };
+  penBtn.onclick=function(){selectTool('pen')}; eraserBtn.onclick=function(){selectTool('eraser')};
+  lineBtn.onclick=function(){selectTool('line')}; rectBtn.onclick=function(){selectTool('rect')}; ellipseBtn.onclick=function(){selectTool('ellipse')};
+  eyedropBtn.onclick=function(){selectTool('eyedrop')}; loupeBtn.onclick=function(){selectTool('loupe')};
+  fillBtn.onclick=function(){fillShape=!(fillBtn.getAttribute('aria-pressed')==='true'); setPressed(fillBtn,fillShape);};
+  sizeInput.oninput=function(){sizeOut.textContent=sizeInput.value+' px';}; sizeOut.textContent=sizeInput.value+' px';
 
-  fillBtn.onclick = function(){
-    fillShape = !(fillBtn.getAttribute('aria-pressed')==='true');
-    setPressed(fillBtn, fillShape);
+  function setActiveLayer(i){activeLayer=i; setPressed(layer1Btn,i===0); setPressed(layer2Btn,i===1); setPressed(layer3Btn,i===2);}
+  layer1Btn.onclick=function(){setActiveLayer(0)}; layer2Btn.onclick=function(){setActiveLayer(1)}; layer3Btn.onclick=function(){setActiveLayer(2)};
+  function toggleVis(i,btn){vis[i]=!(btn.getAttribute('aria-pressed')==='true'); setPressed(btn,vis[i]); layers[i].style.display=vis[i]?'block':'none';}
+  eye1.onclick=function(){toggleVis(0,eye1)}; eye2.onclick=function(){toggleVis(1,eye2)}; eye3.onclick=function(){toggleVis(2,eye3)};
+  // Opacité par calque
+  function applyOpacity(idx,val){ layers[idx].style.opacity = (Math.max(0,Math.min(100,val))/100).toString(); }
+  op1.oninput=function(){applyOpacity(0,op1.value)}; op2.oninput=function(){applyOpacity(1,op2.value)}; op3.oninput=function(){applyOpacity(2,op3.value)};
+
+  // Import image
+  importBtn.onclick=function(){ fileInput.click(); };
+  fileInput.onchange=function(e){
+    var f=e.target.files && e.target.files[0]; if(!f) return;
+    var img=new Image(); img.onload=function(){
+      var ctx=ctxs[activeLayer]; ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr,dpr);
+      if(fitImage.checked){
+        // ajuster à la surface visible (CSS)
+        var W=bg.width/dpr, H=bg.height/dpr;
+        // fit contain
+        var r=Math.min(W/img.width, H/img.height);
+        var w=img.width*r, h=img.height*r, x=(W-w)/2, y=(H-h)/2;
+        ctx.drawImage(img, x, y, w, h);
+      }else{
+        ctx.drawImage(img, 0, 0);
+      }
+      pushHistory();
+    };
+    var reader=new FileReader();
+    reader.onload=function(){ img.src=reader.result; };
+    reader.readAsDataURL(f);
+    // reset input
+    e.target.value='';
   };
-  sizeInput.oninput = function(){ sizeOut.textContent = sizeInput.value + ' px'; };
-  sizeOut.textContent = sizeInput.value + ' px';
 
-  function setActiveLayer(i){
-    activeLayer = i;
-    setPressed(layer1Btn, i===0);
-    setPressed(layer2Btn, i===1);
-    setPressed(layer3Btn, i===2);
-  }
-  layer1Btn.onclick = function(){ setActiveLayer(0); };
-  layer2Btn.onclick = function(){ setActiveLayer(1); };
-  layer3Btn.onclick = function(){ setActiveLayer(2); };
-
-  eye1.onclick = function(){ toggleVis(0, eye1); };
-  eye2.onclick = function(){ toggleVis(1, eye2); };
-  eye3.onclick = function(){ toggleVis(2, eye3); };
-  function toggleVis(i, btn){
-    vis[i] = !(btn.getAttribute('aria-pressed')==='true');
-    setPressed(btn, vis[i]);
-    layers[i].style.display = vis[i] ? 'block' : 'none';
-  }
-
-  // ---------- Sizing ----------
-  function scaleCtx(ctx){ ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr,dpr); }
+  // Sizing
+  function scaleCtx(ctx){ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr,dpr);}
   function fit(){
-    var rect = bg.getBoundingClientRect();
-    var w = Math.max(1, Math.round(rect.width * dpr));
-    var h = Math.max(1, Math.round(rect.height * dpr));
-
-    [bg,l1,l2,l3,overlay,comp].forEach(function(c){ c.width = w; c.height = h; });
-
+    var rect=bg.getBoundingClientRect();
+    var w=Math.max(1,Math.round(rect.width*dpr)), h=Math.max(1,Math.round(rect.height*dpr));
+    [bg,l1,l2,l3,overlay,comp].forEach(function(c){c.width=w;c.height=h;});
     scaleCtx(bgx); scaleCtx(ctxs[0]); scaleCtx(ctxs[1]); scaleCtx(ctxs[2]); scaleCtx(octx);
-    // fond blanc
-    bgx.fillStyle = '#ffffff';
-    bgx.fillRect(0,0, bg.width/dpr, bg.height/dpr);
-
-    // reset overlay
-    octx.clearRect(0,0, overlay.width, overlay.height);
-
-    resetHistory(); // baseline (3 calques vides)
+    bgx.fillStyle='#ffffff'; bgx.fillRect(0,0,bg.width/dpr,bg.height/dpr);
+    octx.clearRect(0,0,overlay.width,overlay.height);
+    resetHistory();
   }
-  window.addEventListener('resize', function(){ dpr = Math.max(1, window.devicePixelRatio || 1); fit(); });
+  window.addEventListener('resize', function(){ dpr=Math.max(1,window.devicePixelRatio||1); fit(); });
 
-  // ---------- History ----------
+  // History (3 calques à la fois)
   function snapshotAll(){
-    try{
-      return [
-        ctxs[0].getImageData(0,0,l1.width,l1.height),
-        ctxs[1].getImageData(0,0,l2.width,l2.height),
-        ctxs[2].getImageData(0,0,l3.width,l3.height)
-      ];
-    }catch(e){ return null; }
+    try{ return [ctxs[0].getImageData(0,0,l1.width,l1.height), ctxs[1].getImageData(0,0,l2.width,l2.height), ctxs[2].getImageData(0,0,l3.width,l3.height)]; }
+    catch(e){ return null; }
   }
-  function applySnapshot(snap){
-    if (!snap) return;
-    ctxs[0].putImageData(snap[0],0,0);
-    ctxs[1].putImageData(snap[1],0,0);
-    ctxs[2].putImageData(snap[2],0,0);
-  }
-  function resetHistory(){
-    history = []; historyIndex = -1;
-    pushHistory();
-  }
-  function pushHistory(){
-    var snap = snapshotAll();
-    if (!snap) return;
-    if (historyIndex < history.length - 1){ history = history.slice(0, historyIndex+1); }
-    history.push(snap);
-    if (history.length > HISTORY_LIMIT){ history.shift(); } else { historyIndex++; }
-    updateUndoRedo();
-  }
-  function updateUndoRedo(){
-    undoBtn.disabled = !(historyIndex > 0);
-    redoBtn.disabled = !(historyIndex < history.length - 1);
-  }
-  function undo(){
-    if (historyIndex > 0){
-      historyIndex--;
-      applySnapshot(history[historyIndex]);
-      octx.clearRect(0,0,overlay.width,overlay.height);
-      updateUndoRedo();
-    }
-  }
-  function redo(){
-    if (historyIndex < history.length - 1){
-      historyIndex++;
-      applySnapshot(history[historyIndex]);
-      octx.clearRect(0,0,overlay.width,overlay.height);
-      updateUndoRedo();
-    }
-  }
-  undoBtn.onclick = undo;
-  redoBtn.onclick = redo;
+  function applySnapshot(s){ if(!s) return; ctxs[0].putImageData(s[0],0,0); ctxs[1].putImageData(s[1],0,0); ctxs[2].putImageData(s[2],0,0); }
+  function resetHistory(){ history=[]; historyIndex=-1; pushHistory(); }
+  function pushHistory(){ var s=snapshotAll(); if(!s) return; if(historyIndex<history.length-1) history=history.slice(0,historyIndex+1); history.push(s); if(history.length>HISTORY_LIMIT){history.shift();} else {historyIndex++;} updateUndoRedo(); }
+  function updateUndoRedo(){ undoBtn.disabled=!(historyIndex>0); redoBtn.disabled=!(historyIndex<history.length-1); }
+  undoBtn.onclick=function(){ if(historyIndex>0){historyIndex--; applySnapshot(history[historyIndex]); octx.clearRect(0,0,overlay.width,overlay.height); updateUndoRedo();} };
+  redoBtn.onclick=function(){ if(historyIndex<history.length-1){historyIndex++; applySnapshot(history[historyIndex]); octx.clearRect(0,0,overlay.width,overlay.height); updateUndoRedo();} };
 
-  // ---------- Utils ----------
-  function cssToCanvasCoords(x,y){
-    var r = bg.getBoundingClientRect();
-    return { cx: (x - r.left), cy: (y - r.top) };
-  }
+  // Utils
+  function cssToCanvasCoords(x,y){ var r=bg.getBoundingClientRect(); return {cx:(x-r.left), cy:(y-r.top)}; }
   function setStroke(ctx){
     ctx.lineCap='round'; ctx.lineJoin='round'; ctx.globalAlpha=1.0;
-    if (tool==='eraser'){
-      ctx.globalCompositeOperation='destination-out';
-      ctx.strokeStyle='rgba(0,0,0,1)';
-    } else {
-      ctx.globalCompositeOperation='source-over';
-      ctx.strokeStyle=colorInput.value;
+    if(tool==='eraser'){ ctx.globalCompositeOperation='destination-out'; ctx.strokeStyle='rgba(0,0,0,1)'; }
+    else { ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=colorInput.value; }
+    ctx.lineWidth=Number(sizeInput.value);
+  }
+  function compositeTo(cctx){ cctx.setTransform(1,0,0,1,0,0); cctx.clearRect(0,0,comp.width,comp.height); cctx.drawImage(bg,0,0); if(vis[0]) cctx.drawImage(l1,0,0); if(vis[1]) cctx.drawImage(l2,0,0); if(vis[2]) cctx.drawImage(l3,0,0); }
+  function pickColorAt(x,y){ compositeTo(compCtx); var px=Math.round(x*dpr), py=Math.round(y*dpr); try{ var d=compCtx.getImageData(px,py,1,1).data; var hex='#'+[d[0],d[1],d[2]].map(v=>('0'+v.toString(16)).slice(-2)).join(''); colorInput.value=hex; return hex; }catch(e){ return null; } }
+
+  // Shapes / Preview / Loupe
+  function drawShape(ctx,x0,y0,x1,y1,color,lineW,fill,kind){
+    var left=Math.min(x0,x1), top=Math.min(y0,y1), w=Math.abs(x1-x0), h=Math.abs(y1-y0);
+    ctx.save(); scaleCtx(ctx); ctx.lineWidth=lineW; ctx.strokeStyle=color; ctx.fillStyle=color; ctx.globalCompositeOperation='source-over';
+    if(kind==='rect'){ if(fill) ctx.fillRect(left,top,w,h); ctx.strokeRect(left,top,w,h); }
+    else if(kind==='ellipse'){
+      ctx.beginPath();
+      if(ctx.ellipse){ ctx.ellipse(left+w/2, top+h/2, Math.max(w/2,0.1), Math.max(h/2,0.1), 0, 0, Math.PI*2); }
+      else { var k=0.5522848, ox=(w/2)*k, oy=(h/2)*k, xe=left+w, ye=top+h, xm=left+w/2, ym=top+h/2;
+             ctx.moveTo(left,ym); ctx.bezierCurveTo(left,ym-oy,xm-ox,top,xm,top); ctx.bezierCurveTo(xm+ox,top,xe,ym-oy,xe,ym);
+             ctx.bezierCurveTo(xe,ym+oy,xm+ox,ye,xm,ye); ctx.bezierCurveTo(xm-ox,ye,left,ym+oy,left,ym); }
+      if(fill) ctx.fill(); ctx.stroke();
+    } else if(kind==='line'){
+      ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
     }
-    ctx.lineWidth = Number(sizeInput.value);
+    ctx.restore();
   }
-
-  function compositeTo(compCtx){
-    compCtx.setTransform(1,0,0,1,0,0);
-    compCtx.clearRect(0,0, comp.width, comp.height);
-    compCtx.drawImage(bg,0,0);
-    if (vis[0]) compCtx.drawImage(l1,0,0);
-    if (vis[1]) compCtx.drawImage(l2,0,0);
-    if (vis[2]) compCtx.drawImage(l3,0,0);
-  }
-
-  function pickColorAt(x,y){
+  function drawLoupe(x,y){
     compositeTo(compCtx);
-    var px = Math.round(x*dpr), py = Math.round(y*dpr);
-    try{
-      var data = compCtx.getImageData(px,py,1,1).data;
-      var r = data[0], g = data[1], b = data[2];
-      var hex = '#'+[r,g,b].map(function(v){ var s=v.toString(16); return s.length===1?'0'+s:s; }).join('');
-      colorInput.value = hex;
-      return hex;
-    }catch(e){ return null; }
+    var radius=60, zoom=2;
+    octx.setTransform(1,0,0,1,0,0); octx.scale(dpr,dpr);
+    octx.clearRect(0,0, overlay.width/dpr, overlay.height/dpr);
+    octx.save(); octx.beginPath(); octx.arc(x,y,radius,0,Math.PI*2); octx.clip();
+    var sx=(x-radius/zoom)*dpr, sy=(y-radius/zoom)*dpr, sw=(2*radius/zoom)*dpr, sh=(2*radius/zoom)*dpr;
+    octx.drawImage(comp, sx,sy,sw,sh, x-radius, y-radius, 2*radius,2*radius);
+    octx.restore();
+    octx.beginPath(); octx.arc(x,y,radius,0,Math.PI*2); octx.lineWidth=3; octx.strokeStyle='#fff'; octx.stroke();
+    octx.beginPath(); octx.arc(x,y,2,0,Math.PI*2); octx.fillStyle='#fff'; octx.fill();
   }
 
-  // ---------- Touch / Mouse via OVERLAY ----------
+  // Touch / Mouse via overlay (comme V2)
   function touchStart(e){
-    if (!e.changedTouches || !e.changedTouches.length) return;
-    e.preventDefault();
-    var p = cssToCanvasCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-    lastX = p.cx; lastY = p.cy; startX = p.cx; startY = p.cy;
-    drawing = true;
+    if(!e.changedTouches||!e.changedTouches.length) return; e.preventDefault();
+    var p=cssToCanvasCoords(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+    lastX=p.cx; lastY=p.cy; startX=p.cx; startY=p.cy; drawing=true;
 
-    if (tool==='pen' || tool==='eraser'){
-      var ctx = ctxs[activeLayer];
-      setStroke(ctx);
+    if(tool==='pen'||tool==='eraser'){
+      var ctx=ctxs[activeLayer]; setStroke(ctx);
       ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(lastX+0.01,lastY); ctx.stroke();
-    } else if (tool==='eyedrop'){
-      var picked = pickColorAt(p.cx, p.cy);
+    } else if(tool==='line'||tool==='rect'||tool==='ellipse'){
       octx.clearRect(0,0,overlay.width,overlay.height);
-      if (picked){
-        octx.save(); scaleCtx(octx);
-        octx.beginPath(); octx.arc(p.cx, p.cy, 16, 0, Math.PI*2); octx.fillStyle=picked; octx.fill();
-        octx.lineWidth=2; octx.strokeStyle='#fff'; octx.stroke();
-        octx.restore();
-      }
-      drawing = false;
-    } else if (tool==='loupe'){
-      drawLoupe(p.cx, p.cy);
-    } else {
+    } else if(tool==='eyedrop'){
+      var picked=pickColorAt(p.cx,p.cy);
       octx.clearRect(0,0,overlay.width,overlay.height);
-    }
+      if(picked){ octx.save(); scaleCtx(octx); octx.beginPath(); octx.arc(p.cx,p.cy,16,0,Math.PI*2); octx.fillStyle=picked; octx.fill(); octx.lineWidth=2; octx.strokeStyle='#fff'; octx.stroke(); octx.restore(); }
+      drawing=false;
+    } else if(tool==='loupe'){ drawLoupe(p.cx,p.cy); }
   }
   function touchMove(e){
-    if (!e.changedTouches || !e.changedTouches.length) return;
-    if (!drawing && tool!=='loupe') return;
-    e.preventDefault();
-    var p = cssToCanvasCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-
-    if (tool==='pen' || tool==='eraser'){
-      var ctx = ctxs[activeLayer];
-      setStroke(ctx);
-      ctx.beginPath();
-      ctx.moveTo(lastX,lastY); ctx.lineTo(p.cx,p.cy); ctx.stroke();
-      lastX = p.cx; lastY = p.cy;
-    } else if (tool==='rect' || tool==='ellipse'){
+    if(!e.changedTouches||!e.changedTouches.length) return;
+    if(!drawing && tool!=='loupe') return; e.preventDefault();
+    var p=cssToCanvasCoords(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+    if(tool==='pen'||tool==='eraser'){
+      var ctx=ctxs[activeLayer]; setStroke(ctx);
+      ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.cx,p.cy); ctx.stroke();
+      lastX=p.cx; lastY=p.cy;
+    } else if(tool==='line'||tool==='rect'||tool==='ellipse'){
       octx.setTransform(1,0,0,1,0,0); octx.scale(dpr,dpr);
       octx.clearRect(0,0, overlay.width/dpr, overlay.height/dpr);
-      drawShape(octx, startX, startY, p.cx, p.cy, colorInput.value, Number(sizeInput.value), fillShape, tool);
-    } else if (tool==='loupe'){
-      drawLoupe(p.cx, p.cy);
-    }
+      var kind = (tool==='line')?'line':tool;
+      drawShape(octx, startX,startY, p.cx,p.cy, colorInput.value, Number(sizeInput.value), fillShape, kind);
+    } else if(tool==='loupe'){ drawLoupe(p.cx,p.cy); }
   }
   function touchEnd(e){
-    if (!drawing && tool!=='loupe') return;
-    e.preventDefault();
-
-    if (tool==='pen' || tool==='eraser'){
-      drawing = false;
-      pushHistory();
-    } else if (tool==='rect' || tool==='ellipse'){
-      var ctx = ctxs[activeLayer];
-      var p = cssToCanvasCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-      drawShape(ctx, startX, startY, p.cx, p.cy, colorInput.value, Number(sizeInput.value), fillShape, tool);
-      octx.clearRect(0,0, overlay.width, overlay.height);
-      drawing = false;
-      pushHistory();
-    } else if (tool==='loupe'){
-      octx.clearRect(0,0, overlay.width, overlay.height);
-      drawing = false;
-    }
+    if(!drawing && tool!=='loupe') return; e.preventDefault();
+    if(tool==='pen'||tool==='eraser'){
+      drawing=false; pushHistory();
+    } else if(tool==='line'||tool==='rect'||tool==='ellipse'){
+      var ctx=ctxs[activeLayer]; var p=cssToCanvasCoords(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+      drawShape(ctx, startX,startY, p.cx,p.cy, colorInput.value, Number(sizeInput.value), fillShape, (tool==='line')?'line':tool);
+      octx.clearRect(0,0,overlay.width,overlay.height); drawing=false; pushHistory();
+    } else if(tool==='loupe'){ octx.clearRect(0,0,overlay.width,overlay.height); drawing=false; }
   }
-
-  // Souris (tests desktop)
-  overlay.addEventListener('mousedown', function(e){
-    var te = { changedTouches: [{ clientX:e.clientX, clientY:e.clientY }] };
-    touchStart({ changedTouches: te.changedTouches, preventDefault:function(){} });
-    function move(ev){ touchMove({ changedTouches:[{clientX:ev.clientX, clientY:ev.clientY}], preventDefault:function(){} }); }
-    function up(ev){
-      touchEnd({ changedTouches:[{clientX:ev.clientX, clientY:ev.clientY}], preventDefault:function(){} });
-      window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up);
-    }
-    window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
-  });
-
-  // Tactile via overlay
   overlay.addEventListener('touchstart',  touchStart, {passive:false});
   overlay.addEventListener('touchmove',   touchMove,  {passive:false});
   overlay.addEventListener('touchend',    touchEnd,   {passive:false});
   overlay.addEventListener('touchcancel', touchEnd,   {passive:false});
+  // Souris (tests ordi)
+  overlay.addEventListener('mousedown', function(e){
+    var te={changedTouches:[{clientX:e.clientX,clientY:e.clientY}]}; touchStart({changedTouches:te.changedTouches, preventDefault:function(){}});
+    function mv(ev){ touchMove({changedTouches:[{clientX:ev.clientX,clientY:ev.clientY}], preventDefault:function(){}}); }
+    function up(ev){ touchEnd({changedTouches:[{clientX:ev.clientX,clientY:ev.clientY}], preventDefault:function(){}}); window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up); }
+    window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+  });
 
-  // ---------- Shapes / Loupe ----------
-  function drawShape(ctx, x0,y0,x1,y1, color, lineW, fill, kind){
-    var left = Math.min(x0,x1), top = Math.min(y0,y1);
-    var w = Math.abs(x1-x0), h = Math.abs(y1-y0);
-    ctx.save(); scaleCtx(ctx);
-    ctx.lineWidth = lineW; ctx.strokeStyle = color; ctx.fillStyle = color;
-    ctx.globalCompositeOperation = 'source-over';
-    if (kind==='rect'){
-      if (fill) ctx.fillRect(left, top, w, h);
-      ctx.strokeRect(left, top, w, h);
-    } else { // ellipse
-      ctx.beginPath();
-      if (ctx.ellipse){
-        ctx.ellipse(left + w/2, top + h/2, Math.max(w/2,0.1), Math.max(h/2,0.1), 0, 0, Math.PI*2);
-      } else {
-        var kappa = 0.5522848, ox = (w/2)*kappa, oy = (h/2)*kappa, xe = left+w, ye = top+h, xm = left+w/2, ym = top+h/2;
-        ctx.moveTo(left, ym);
-        ctx.bezierCurveTo(left, ym-oy, xm-ox, top, xm, top);
-        ctx.bezierCurveTo(xm+ox, top, xe, ym-oy, xe, ym);
-        ctx.bezierCurveTo(xe, ym+oy, xm+ox, ye, xm, ye);
-        ctx.bezierCurveTo(xm-ox, ye, left, ym+oy, left, ym);
-      }
-      if (fill) ctx.fill();
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function drawLoupe(x,y){
-    compositeTo(compCtx);
-    var radius = 60; var zoom = 2;
-    octx.setTransform(1,0,0,1,0,0); octx.scale(dpr,dpr);
-    octx.clearRect(0,0, overlay.width/dpr, overlay.height/dpr);
-
-    octx.save();
-    octx.beginPath(); octx.arc(x,y,radius,0,Math.PI*2); octx.clip();
-
-    var sx = (x - radius/zoom) * dpr;
-    var sy = (y - radius/zoom) * dpr;
-    var sw = (2*radius/zoom) * dpr;
-    var sh = (2*radius/zoom) * dpr;
-
-    octx.drawImage(comp, sx, sy, sw, sh, x - radius, y - radius, 2*radius, 2*radius);
-    octx.restore();
-
-    octx.beginPath();
-    octx.arc(x,y,radius,0,Math.PI*2);
-    octx.lineWidth = 3;
-    octx.strokeStyle = '#ffffff';
-    octx.stroke();
-
-    octx.beginPath(); octx.arc(x,y,2,0,Math.PI*2);
-    octx.fillStyle='#ffffff'; octx.fill();
-  }
-
-  // ---------- Actions ----------
-  clearBtn.onclick = function(){
-    if (!confirm('Effacer tous les calques ?')) return;
-    [0,1,2].forEach(function(i){
-      ctxs[i].setTransform(1,0,0,1,0,0); ctxs[i].scale(dpr,dpr);
-      ctxs[i].clearRect(0,0,layers[i].width, layers[i].height);
-    });
-    octx.clearRect(0,0,overlay.width,overlay.height);
-    pushHistory();
+  // Actions
+  clearBtn.onclick=function(){
+    if(!confirm('Effacer tous les calques ?')) return;
+    [0,1,2].forEach(function(i){ ctxs[i].setTransform(1,0,0,1,0,0); ctxs[i].scale(dpr,dpr); ctxs[i].clearRect(0,0,layers[i].width,layers[i].height); });
+    octx.clearRect(0,0,overlay.width,overlay.height); pushHistory();
   };
-
-  saveBtn.onclick = function(){
-    // Export PNG : fond blanc + calques visibles
-    var ex = document.createElement('canvas');
-    ex.width = bg.width; ex.height = bg.height;
-    var exctx = ex.getContext('2d');
-    exctx.fillStyle = '#ffffff'; exctx.fillRect(0,0,ex.width,ex.height);
-    if (vis[0]) exctx.drawImage(l1,0,0);
-    if (vis[1]) exctx.drawImage(l2,0,0);
-    if (vis[2]) exctx.drawImage(l3,0,0);
-    var link = document.createElement('a');
-    var ts = new Date().toISOString().replace(/[:.]/g,'-');
-    link.download = 'patdraw-'+ts+'.png';
-    link.href = ex.toDataURL('image/png');
+  saveBtn.onclick=function(){
+    // Export PNG : fond blanc + calques visibles (avec opacité appliquée)
+    compositeTo(compCtx); // comp = rendu fusionné visible
+    var link=document.createElement('a'); var ts=new Date().toISOString().replace(/[:.]/g,'-');
+    link.download='patdraw-'+ts+'.png'; link.href=comp.toDataURL('image/png');
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
-  // Raccourci clavier “m”
-  window.addEventListener('keydown', function(e){
-    if (e.key && (e.key==='m' || e.key==='M')){
-      var isOpen = toolbar.className.indexOf('open') !== -1;
-      openMenu(!isOpen);
-    }
-  });
+  // Raccourci clavier 'm'
+  window.addEventListener('keydown', function(e){ if(e.key&&(e.key==='m'||e.key==='M')){ openMenu(!(toolbar.className.indexOf('open')!==-1)); } });
 
-  // ---------- Init ----------
+  // Init
   setTimeout(function(){
-    var rect = document.getElementById('stack').getBoundingClientRect();
-    [bg,l1,l2,l3,overlay,comp].forEach(function(c){
-      c.style.width = '100%'; c.style.height='100%';
-      c.width = Math.max(1, Math.round(rect.width * dpr));
-      c.height = Math.max(1, Math.round(rect.height * dpr));
-    });
+    var rect=document.getElementById('stack').getBoundingClientRect();
+    [bg,l1,l2,l3,overlay,comp].forEach(function(c){ c.style.width='100%'; c.style.height='100%'; c.width=Math.max(1,Math.round(rect.width*dpr)); c.height=Math.max(1,Math.round(rect.height*dpr)); });
     scaleCtx(bgx); scaleCtx(ctxs[0]); scaleCtx(ctxs[1]); scaleCtx(ctxs[2]); scaleCtx(octx);
-    bgx.fillStyle = '#ffffff'; bgx.fillRect(0,0, bg.width/dpr, bg.height/dpr);
+    bgx.fillStyle='#ffffff'; bgx.fillRect(0,0,bg.width/dpr,bg.height/dpr);
     resetHistory();
-  }, 0);
-
+  },0);
 })();
 </script>
 </body>
